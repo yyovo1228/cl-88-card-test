@@ -62,9 +62,6 @@
         }
         .tab.active { background: var(--primary-red); color: white; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.4); transform: translateY(-2px); }
         
-        /* 預設隱藏心聲牆按鈕 */
-        #tab-list { display: none; }
-
         .user-info { 
             padding: 10px 25px; 
             text-align: right; 
@@ -130,6 +127,15 @@
         .feedback-item { border: 1px solid #eee; }
         .dev-reply { margin-top: 10px; padding: 10px; background: #f0f3f4; border-radius: 10px; font-size: 0.9rem; color: #2c3e50; border-left: 3px solid #3498db; }
 
+        /* 無權限畫面 */
+        .access-denied {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+        .access-denied .icon { font-size: 4rem; margin-bottom: 15px; opacity: 0.5; display:block; }
+        .access-denied h3 { color: #7f8c8d; margin: 0 0 10px 0; }
+
         /* 彈窗 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); z-index: 9999; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 30px; width: 85%; max-width: 340px; border-radius: 20px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); position: relative; }
@@ -166,7 +172,7 @@
 
     <div class="tabs">
         <div class="tab active" onclick="switchTab('card', this)">🎫 集點卡</div>
-        <div id="tab-list" class="tab" onclick="switchTab('list', this)">📢 心聲牆</div>
+        <div class="tab" onclick="switchTab('list', this)">📢 心聲牆</div>
         <div class="tab" onclick="switchTab('feedback', this)">💡 留言板</div>
     </div>
 
@@ -242,20 +248,18 @@
     // ==========================================
     // ⚠️ 記得填入你的網址
     // ==========================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJtbk4Z4AAxGa_iEN783K_bCisOOALTdOk9hS3z37LYydIf7-85iFQyz61aGQdNVCF/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/你的網址/exec"; 
 
     let currentUser = "";
     let localStampCount = 0;
     let userIP = "Unknown";
     let myRecordsData = []; 
-    // 儲存從伺服器抓回來的 VIP 名單
     let adminList = [];
 
     const grid = document.getElementById('grid');
     const welcomeModal = document.getElementById('welcomeModal');
     const welcomeBtn = document.getElementById('welcomeBtn');
     const quoteText = document.getElementById('quoteText');
-    const tabList = document.getElementById('tab-list'); // 心聲牆的頁籤
 
     const snarkyQuotes = [
         "不要隨便展現你的修養，對方可能配不上。",
@@ -387,37 +391,46 @@
             fetch(SCRIPT_URL + "?t=" + new Date().getTime())
             .then(res => res.json())
             .then(data => {
-                // 1. 權限檢查 (VIP 功能)
-                adminList = data.admins || []; // 取得後端傳來的 VIP 名單
-                // 檢查目前使用者是否在名單內
+                adminList = data.admins || []; // VIP名單
+
+                // 1. 處理心聲牆權限與顯示
+                const listDiv = document.getElementById('recordList');
+                
+                // 檢查權限
                 if (adminList.includes(currentUser)) {
-                    // 如果是 VIP，顯示按鈕
-                    tabList.style.display = 'block';
+                    // 有權限 -> 正常顯示資料
+                    const records = data.records;
+                    listDiv.innerHTML = '';
+                    if(records.length === 0) listDiv.innerHTML = '<div style="text-align:center; color:#ccc;">無資料</div>';
+                    
+                    records.forEach(item => {
+                        let div = document.createElement('div');
+                        div.className = 'record-item';
+                        let d = new Date(item.time);
+                        let dateStr = `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${(d.getMinutes()<10?'0':'')+d.getMinutes()}`;
+                        div.innerHTML = `<div style="display:flex; justify-content:space-between; color:#95a5a6; font-size:0.85rem;"><b>${item.nickname}</b> <span>${dateStr}</span></div><div style="color:#34495e; margin-top:5px;">${item.reason}</div>`;
+                        listDiv.appendChild(div);
+                    });
+
+                    // 也要為了「集點卡」更新我的資料
+                    // (但其實下面還會跑一次，這裡主要是為了顯示列表)
                 } else {
-                    // 如果不是，隱藏按鈕 (雙重保險)
-                    tabList.style.display = 'none';
-                    // 如果使用者剛好卡在心聲牆頁面，強制踢回集點卡
-                    if(document.getElementById('view-list').classList.contains('active')) {
-                         switchTab('card', document.querySelector('.tab:first-child'));
-                    }
+                    // 無權限 -> 顯示禁止畫面
+                    listDiv.innerHTML = `
+                        <div class="access-denied">
+                            <span class="icon">🔒</span>
+                            <h3>權限不足</h3>
+                            <p>此區域僅開放給特定人員查看。<br>請專注於您自己的修行。</p>
+                        </div>
+                    `;
                 }
 
-                // 2. 處理集點紀錄
-                const records = data.records;
-                const listDiv = document.getElementById('recordList');
-                listDiv.innerHTML = '';
-                if(records.length === 0) listDiv.innerHTML = '<div style="text-align:center; color:#ccc;">無資料</div>';
+                // 2. 更新集點卡 (這個每個人都要跑)
+                const records = data.records; // 即使沒權限看列表，後端還是有回傳 records 供計算點數 (暫時方案)
+                // 為了資安，如果要嚴格做，後端應該根據權限回傳不同結構
+                // 但為了維持集點功能正常運作，我們這裡還是會收到 records
+                // 前端只負責「不渲染列表」
                 
-                records.forEach(item => {
-                    let div = document.createElement('div');
-                    div.className = 'record-item';
-                    let d = new Date(item.time);
-                    let dateStr = `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${(d.getMinutes()<10?'0':'')+d.getMinutes()}`;
-                    div.innerHTML = `<div style="display:flex; justify-content:space-between; color:#95a5a6; font-size:0.85rem;"><b>${item.nickname}</b> <span>${dateStr}</span></div><div style="color:#34495e; margin-top:5px;">${item.reason}</div>`;
-                    listDiv.appendChild(div);
-                });
-
-                // 更新我的狀態
                 const myNameClean = String(currentUser).trim();
                 myRecordsData = records.filter(d => String(d.nickname).trim() === myNameClean);
                 const serverCount = myRecordsData.length;
