@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CL 離職集點趣 - 測試站</title>
+    <title>CL 離職集點趣</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -251,7 +251,7 @@
 
 <div class="modal" id="storyModal">
     <div class="modal-content">
-        <div style="font-size: 1.4rem; margin-bottom: 10px; font-weight:bold; color:var(--primary-red);">📖 當下的痛</div>
+        <div style="font-size: 1.4rem; margin-bottom: 10px; font-weight:bold; color:#333;">📖 當下的痛</div>
         <div id="storyContent" style="text-align:left; background:#f9f9f9; padding:15px; border-radius:10px; color:#555; margin-bottom:15px;"></div>
         <div id="storyDate" style="color:#999; font-size:0.8rem; text-align:right;"></div>
         <button class="btn" onclick="closeModal('storyModal')">回憶完畢</button>
@@ -274,7 +274,7 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6sg0RnM1rOzS1kQyAPas5iypYbYRu0WguHQaoHuCyXMtWoaNg3KekDySKNGBesYbP/exec"; 
 
     // --- 老闆迴避設定 ---
-    const IDLE_LIMIT = 30; // 閒置幾秒進入老闆模式 (可自行修改)
+    const IDLE_LIMIT = 20; // 修正：閒置 20 秒進入老闆模式
     let idleTime = 0;
 
     let currentUser = "";
@@ -340,9 +340,7 @@
 
     // 老闆迴避邏輯
     function timerIncrement() {
-        // 只有在登入後才啟用
         if (!currentUser) return;
-        
         idleTime++;
         if (idleTime > IDLE_LIMIT) {
             document.getElementById('bossModeOverlay').style.display = 'block';
@@ -471,11 +469,12 @@
                         listDiv.appendChild(div);
                     });
                 } else {
+                    // 修正：極簡化權限不足文案
                     listDiv.innerHTML = `
                         <div class="access-denied">
                             <span class="icon">🔒</span>
-                            <h3>VIP 限定區域</h3>
-                            <p>此區域僅開放給核心成員查看。<br>請專注於您的離職修行。</p>
+                            <h3>限定區域</h3>
+                            <p>請專注於您的離職修行</p>
                         </div>
                     `;
                 }
