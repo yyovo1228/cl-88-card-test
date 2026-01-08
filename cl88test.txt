@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CL 離職集點趣 - 測試版</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-red: #e74c3c;
+            --primary-bg: #fadbd8;
+            --text-dark: #2c3e50;
+            --bg-dots: #f4f6f7;
+        }
+
+        body {
+            background-color: var(--bg-dots);
+            background-image: radial-gradient(#d5d8dc 1.5px, transparent 1.5px);
+            background-size: 20px 20px;
+            font-family: 'Noto Sans TC', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-dark);
+            padding: 20px 0;
+            box-sizing: border-box;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            background: rgba(255,255,255,0.98);
+            min-height: 90vh;
+            max-height: 900px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--primary-red);
+            z-index: 5;
+        }
+
+        h1 { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--primary-red); font-size: 1.5rem; letter-spacing: 1px;}
+
+        /* 導航列更新 */
+        .tabs { display: flex; padding: 10px; gap: 8px; justify-content: center; background: #fff;}
+        .tab { 
+            flex: 1; padding: 8px; text-align: center; border-radius: 50px; 
+            background: #ecf0f1; cursor: pointer; font-weight: bold; color: #95a5a6; 
+            transition: 0.3s; font-size: 0.85rem;
+        }
+        .tab.active { background: var(--primary-red); color: white; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.4); transform: translateY(-2px); }
+
+        .user-info { 
+            padding: 10px 25px; 
+            text-align: right; 
+            font-size: 0.9rem; 
+            color: #7f8c8d; 
+            background: #fff;
+            display: flex; 
+            justify-content: flex-end; 
+            align-items: center; 
+            gap: 10px;
+            font-family: 'Fredoka', sans-serif;
+        }
+        
+        .main-content { 
+            padding: 20px; 
+            flex: 1; 
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* 視圖切換 */
+        .view-section { display: none; animation: fadeIn 0.3s; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 集點卡樣式 */
+        .loyalty-card {
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 25px 15px;
+            border: 2px dashed #f1948a;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .points-header { text-align: center; margin-bottom: 25px; border-bottom: 2px dashed #f2f3f4; padding-bottom: 15px;}
+        .points-number { font-size: 3rem; font-family: 'Fredoka', sans-serif; color: var(--primary-red); font-weight: bold; text-shadow: 2px 2px 0px #fadbd8;}
+
+        .stamp-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .stamp-slot {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            background: #fff;
+            border: 2px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #bdc3c7;
+            position: relative;
+            cursor: default;
+            transition: 0.2s;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* 樣式：下一個 */
+        .stamp-slot.next-up {
+            border-color: var(--primary-red);
+            background: #fdfefe;
+            cursor: pointer;
+            color: var(--primary-red);
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.2);
+            animation: pulse 1.5s infinite;
+        }
+        .stamp-slot.next-up::after { content: "+"; }
+
+        /* 樣式：已蓋章 (有點擊功能) */
+        .stamp-slot.stamped {
+            border: 2px solid var(--primary-red);
+            background: #fdedec;
+            color: transparent;
+            cursor: pointer; /* 讓它可以點 */
+        }
+        .stamp-slot.stamped::before {
+            content: "離";
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-red);
+            position: absolute;
+            border: 2px solid var(--primary-red);
+            border-radius: 50%;
+            width: 80%; height: 80%;
+            display: flex; align-items: center; justify-content: center;
+            transform: rotate(-10deg);
+        }
+        .stamp-slot.stamped:hover {
+            transform: scale(1.1);
+            background: #fadbd8;
+        }
+
+        /* 列表樣式 */
+        .record-item { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 15px; 
+            margin-bottom: 15px; 
+            border-left: 5px solid var(--primary-red); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03); 
+        }
+
+        /* 留言板樣式 */
+        .feedback-item {
+            background: #fdfefe;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .dev-reply {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f3f4;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            border-left: 3px solid #3498db;
+        }
+
+        /* 通用彈窗 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; width: 85%; max-width: 340px; border-radius: 20px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); position: relative; }
+
+        textarea { 
+            width: 100%; height: 80px; margin: 15px 0; padding: 15px; 
+            box-sizing: border-box; border: 2px solid #ecf0f1; border-radius: 10px; 
+            font-size: 1rem; font-family: 'Noto Sans TC', sans-serif;
+            background: #fdfefe; resize: none;
+        }
+        textarea:focus { outline: none; border-color: var(--primary-red); background: white;}
+        
+        .btn { background: var(--primary-red); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3); transition: 0.2s;}
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4); }
+        .btn:disabled { background: #ccc; cursor: wait; transform: none; box-shadow: none; }
+        .btn-outline { background: transparent; border: 2px solid #bdc3c7; color: #7f8c8d; margin-top: 10px; box-shadow: none; }
+
+        #loginScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; box-sizing: border-box; background-image: radial-gradient(#d5d8dc 1.5px, transparent 1.5px); background-size: 20px 20px; }
+        input[type="text"] { width: 100%; padding: 15px; margin: 25px 0; border: 2px solid #ecf0f1; border-radius: 12px; font-size: 1.1rem; text-align: center; font-family: inherit; }
+        
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* 慶祝動畫 */
+        #celebrationModal h2 { color: #e67e22; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="loginScreen">
+        <div style="font-size: 4rem; margin-bottom: 20px; animation: float 3s infinite;">🏃💨</div>
+        <h1 style="font-size: 2rem; margin-bottom: 10px;">CL 離職集點趣</h1>
+        <p style="color:#7f8c8d; font-weight:bold;">忍無可忍，無需再忍</p>
+        <input type="text" id="nicknameInput" placeholder="輸入代號 (Ex: 內湖金城武)">
+        <button class="btn" onclick="handleLoginClick()">進入修羅場 ⚡</button>
+    </div>
+
+    <header>
+        <h1>CL 離職集點趣 🧗</h1>
+    </header>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('card', this)">🎫 集點卡</div>
+        <div class="tab" onclick="switchTab('list', this)">📢 心聲牆</div>
+        <div class="tab" onclick="switchTab('feedback', this)">💡 留言板</div>
+    </div>
+
+    <div class="user-info">
+        <span>Poor guy: <span id="displayNickname" style="font-weight:bold; color:var(--primary-red);">...</span></span>
+        <a style="cursor:pointer; text-decoration:underline; font-size:0.8rem; margin-left:5px;" onclick="logout()">(登出)</a>
+    </div>
+
+    <div class="main-content">
+        <div id="view-card" class="view-section active">
+            <div class="loyalty-card">
+                <div class="points-header">
+                    <span class="points-number" id="stampCount">0</span>
+                    <span style="color:#bdc3c7; font-size:1.5rem; font-family:'Fredoka'"> / 30</span>
+                </div>
+                <div class="stamp-grid" id="grid"></div>
+            </div>
+            <p style="color:#95a5a6; font-size:0.85rem; margin-top:20px; text-align:center;">
+                💡 點擊「+」蓋章，點擊「離」查看故事
+            </p>
+        </div>
+
+        <div id="view-list" class="view-section">
+            <div id="recordList">載入中...</div>
+        </div>
+
+        <div id="view-feedback" class="view-section">
+            <div style="background: white; padding:15px; border-radius:15px; margin-bottom:20px;">
+                <h3 style="margin:0 0 10px 0; font-size:1rem;">📝 給開發者的建議</h3>
+                <textarea id="feedbackText" style="height:80px; margin:0 0 10px 0;" placeholder="覺得這功能好用嗎？還是有Bug？來聊聊吧！"></textarea>
+                <button class="btn" style="padding:10px;" onclick="submitFeedback()">送出留言</button>
+            </div>
+            <div id="feedbackList">載入中...</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="welcomeModal">
+    <div class="modal-content">
+        <div style="font-size: 3rem; margin-bottom: 15px;">🫂</div>
+        <h2 style="color:var(--text-dark); margin:0 0 10px 0;">辛苦了...</h2>
+        <p id="quoteText" style="color:#7f8c8d; line-height: 1.6; font-weight:bold; margin: 20px 0;"></p>
+        <button id="welcomeBtn" class="btn" onclick="closeWelcome()">我準備好了 🤧</button>
+    </div>
+</div>
+
+<div class="modal" id="reasonModal">
+    <div class="modal-content">
+        <h3 style="margin:0; color:var(--primary-red)">😤 記錄原因</h3>
+        <textarea id="reasonText" placeholder="這次又是因為什麼？"></textarea>
+        <button id="confirmBtn" class="btn" onclick="submitReason()">確認蓋章</button>
+        <button class="btn btn-outline" onclick="closeModal('reasonModal')">算了，再忍忍</button>
+    </div>
+</div>
+
+<div class="modal" id="storyModal">
+    <div class="modal-content">
+        <div style="font-size: 2rem; margin-bottom: 10px;">📖 當下的痛</div>
+        <div id="storyContent" style="text-align:left; background:#f9f9f9; padding:15px; border-radius:10px; color:#555; margin-bottom:15px;"></div>
+        <div id="storyDate" style="color:#999; font-size:0.8rem; text-align:right;"></div>
+        <button class="btn" onclick="closeModal('storyModal')">回憶完畢</button>
+    </div>
+</div>
+
+<div class="modal" id="celebrationModal">
+    <div class="modal-content" style="border: 4px solid gold;">
+        <div style="font-size: 4rem; margin-bottom: 10px;">🎉</div>
+        <h2>恭喜你，自由了！</h2>
+        <p style="color:#555; margin: 20px 0;">
+            你已經集滿了 30 個離職的理由。<br>
+            這不是衝動，這是深思熟慮的結果。<br>
+            <b>去吧！遞出那張單子！</b>
+        </p>
+        <button class="btn" style="background:gold; color:#d35400;" onclick="closeModal('celebrationModal')">我要去追尋自由！</button>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // ⚠️ 請換上你的「測試站」網址
+    // ==========================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/你的測試站網址/exec"; 
+
+    let currentUser = "";
+    let localStampCount = 0;
+    let userIP = "Unknown";
+    // 用來儲存我的集點紀錄，方便回顧故事
+    let myRecordsData = []; 
+
+    const grid = document.getElementById('grid');
+    const welcomeModal = document.getElementById('welcomeModal');
+    const welcomeBtn = document.getElementById('welcomeBtn');
+    const quoteText = document.getElementById('quoteText');
+    const storyModal = document.getElementById('storyModal');
+
+    // 金句
+    const snarkyQuotes = [
+        "不要隨便展現你的修養，對方可能配不上。",
+        "吾日三省吾身：吾沒錯，是他們有病，這工作沒法做。",
+        "如果我有得罪的地方，那是他罪有應得。",
+        "忍一時越想越氣，退一步乳腺增生。發瘋吧，身體健康最重要。",
+        "只要我沒有素質，就沒有人能用素質綁架我。",
+        "與其檢討自己，不如責怪他人。",
+        "既然解決不了問題，那就解決提出問題的人"
+    ];
+
+    function initGrid() {
+        grid.innerHTML = '';
+        for(let i=0; i<30; i++) {
+            let slot = document.createElement('div');
+            slot.className = 'stamp-slot';
+            slot.innerHTML = `<span>${i+1}</span>`; 
+            slot.dataset.idx = i;
+            grid.appendChild(slot);
+        }
+        updateGrid(0);
+    }
+
+    function init() {
+        initGrid();
+        const savedName = localStorage.getItem('cl_nickname');
+        if(savedName) {
+            currentUser = savedName;
+            document.getElementById('nicknameInput').value = savedName;
+            showWelcomeFlow();
+        }
+        fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>userIP=d.ip).catch(()=>{});
+    }
+
+    function handleLoginClick() {
+        const input = document.getElementById('nicknameInput').value.trim();
+        if(!input) return alert("請輸入暱稱");
+        currentUser = input;
+        localStorage.setItem('cl_nickname', currentUser);
+        showWelcomeFlow();
+    }
+
+    function showWelcomeFlow() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('displayNickname').innerText = currentUser;
+        quoteText.innerText = snarkyQuotes[Math.floor(Math.random() * snarkyQuotes.length)];
+        welcomeBtn.innerText = "我準備好了 🤧";
+        welcomeBtn.disabled = false;
+        welcomeModal.style.display = 'flex';
+    }
+
+    function closeWelcome() {
+        welcomeBtn.innerText = "讀取資料庫中...";
+        welcomeBtn.disabled = true;
+        fetchData().then(() => {
+            setTimeout(() => { welcomeModal.style.display = 'none'; }, 500);
+        });
+    }
+
+    function logout() { localStorage.removeItem('cl_nickname'); location.reload(); }
+
+    function switchTab(view, tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-'+view).classList.add('active');
+        if(view !== 'card') fetchData(); // 切換時更新資料
+    }
+
+    // Modal Control
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    
+    // 開啟蓋章
+    function openReasonModal() {
+        openModal('reasonModal');
+        setTimeout(() => document.getElementById('reasonText').focus(), 100);
+    }
+
+    // 開啟故事回顧 (新功能)
+    function openStory(index) {
+        // 從我們存下來的紀錄中找
+        // myRecordsData[0] 是最新的，所以 index 0 對應的是最新的章...嗎？
+        // 不對，我們之前是用 appendRow，所以資料庫越下面越新。
+        // 但前端顯示時通常最新的在最上面 (reverse)。
+        // 為了簡單，我們假設蓋章是依序的，index 0 對應第 1 個章 (最早的)
+        
+        // 我們需要把 myRecordsData 倒回來變成「時間正序」
+        const sortedRecords = [...myRecordsData].reverse(); 
+        
+        if (sortedRecords[index]) {
+            const r = sortedRecords[index];
+            document.getElementById('storyContent').innerText = r.reason;
+            document.getElementById('storyDate').innerText = new Date(r.time).toLocaleString();
+            openModal('storyModal');
+        }
+    }
+
+    // 送出集點
+    function submitReason() {
+        const reason = document.getElementById('reasonText').value;
+        if(!reason) return alert("請寫下原因");
+        
+        const btn = document.getElementById('confirmBtn');
+        btn.disabled = true; btn.innerText = "傳送中...";
+        
+        localStampCount++;
+        updateGrid(localStampCount);
+
+        // 檢查是否達成 30 點
+        if (localStampCount >= 30) {
+            triggerCelebration();
+        }
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'add_record', nickname: currentUser, reason: reason, ip: userIP }),
+            mode: 'no-cors'
+        }).then(() => {
+            closeModal('reasonModal');
+            document.getElementById('reasonText').value = '';
+            btn.disabled = false; btn.innerText = "確認蓋章";
+            setTimeout(fetchData, 1500);
+        });
+    }
+
+    // 送出留言 (新功能)
+    function submitFeedback() {
+        const text = document.getElementById('feedbackText').value;
+        if(!text) return alert("請輸入內容");
+        
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'add_feedback', nickname: currentUser, message: text }),
+            mode: 'no-cors'
+        }).then(() => {
+            alert("留言已送出，開發者會看到的！");
+            document.getElementById('feedbackText').value = '';
+            fetchData();
+        });
+    }
+
+    function fetchData() {
+        return new Promise((resolve) => {
+            fetch(SCRIPT_URL + "?t=" + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                // 1. 處理集點紀錄
+                const records = data.records;
+                const listDiv = document.getElementById('recordList');
+                listDiv.innerHTML = '';
+                if(records.length === 0) listDiv.innerHTML = '<div style="text-align:center; color:#ccc;">無資料</div>';
+                
+                records.forEach(item => {
+                    let div = document.createElement('div');
+                    div.className = 'record-item';
+                    let d = new Date(item.time);
+                    let dateStr = `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${(d.getMinutes()<10?'0':'')+d.getMinutes()}`;
+                    div.innerHTML = `<div style="display:flex; justify-content:space-between; color:#95a5a6; font-size:0.85rem;"><b>${item.nickname}</b> <span>${dateStr}</span></div><div style="color:#34495e; margin-top:5px;">${item.reason}</div>`;
+                    listDiv.appendChild(div);
+                });
+
+                // 更新我的狀態
+                const myNameClean = String(currentUser).trim();
+                myRecordsData = records.filter(d => String(d.nickname).trim() === myNameClean);
+                const serverCount = myRecordsData.length;
+                if (serverCount > 0 || localStampCount === 0) localStampCount = serverCount;
+                updateGrid(localStampCount);
+
+                // 2. 處理留言板
+                const feedbacks = data.feedbacks;
+                const fbDiv = document.getElementById('feedbackList');
+                fbDiv.innerHTML = '';
+                if(feedbacks.length === 0) fbDiv.innerHTML = '<div style="text-align:center; color:#ccc;">還沒有人留言...</div>';
+                
+                feedbacks.forEach(fb => {
+                    let div = document.createElement('div');
+                    div.className = 'feedback-item';
+                    let d = new Date(fb.time);
+                    let replyHtml = fb.reply ? `<div class="dev-reply"><b>👨‍💻 開發者回覆：</b><br>${fb.reply}</div>` : '';
+                    div.innerHTML = `<div><b>${fb.nickname}</b> <span style="color:#ccc; font-size:0.8rem;">${d.getMonth()+1}/${d.getDate()}</span></div><div style="margin:5px 0;">${fb.message}</div>${replyHtml}`;
+                    fbDiv.appendChild(div);
+                });
+
+                resolve();
+            })
+            .catch(e => { console.error(e); resolve(); });
+        });
+    }
+
+    function updateGrid(count) {
+        document.getElementById('stampCount').innerText = count;
+        const slots = document.querySelectorAll('.stamp-slot');
+        slots.forEach((slot, index) => {
+            slot.className = 'stamp-slot'; slot.onclick = null;
+            if(index < count) {
+                slot.classList.add('stamped');
+                // 點擊已蓋章的格子，查看故事
+                slot.onclick = () => openStory(index);
+            } else if (index === count) {
+                slot.classList.add('next-up');
+                slot.onclick = openReasonModal;
+            }
+        });
+    }
+
+    // 慶祝特效 (Confetti)
+    function triggerCelebration() {
+        openModal('celebrationModal');
+        const duration = 3000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+            if (Date.now() < end) requestAnimationFrame(frame);
+        }());
+    }
+
+    init();
+    window.onclick = function(e) { 
+        if(e.target.classList.contains('modal')) e.target.style.display='none'; 
+    }
+</script>
+
+</body>
+</html>
