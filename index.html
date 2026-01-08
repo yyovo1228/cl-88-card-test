@@ -130,11 +130,13 @@
         /* 無權限畫面 */
         .access-denied {
             text-align: center;
-            padding: 40px 20px;
+            padding: 60px 20px;
             color: #95a5a6;
+            animation: fadeIn 0.5s;
         }
-        .access-denied .icon { font-size: 4rem; margin-bottom: 15px; opacity: 0.5; display:block; }
-        .access-denied h3 { color: #7f8c8d; margin: 0 0 10px 0; }
+        .access-denied .icon { font-size: 5rem; margin-bottom: 20px; display:block; animation: shake 0.5s; }
+        .access-denied h3 { color: #7f8c8d; margin: 0 0 10px 0; font-size: 1.5rem; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
 
         /* 彈窗 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); z-index: 9999; justify-content: center; align-items: center; }
@@ -246,9 +248,9 @@
 
 <script>
     // ==========================================
-    // ⚠️ 記得填入你的網址
+    // ⚠️ 記得填入你的「測試站」網址
     // ==========================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/你的網址/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6sg0RnM1rOzS1kQyAPas5iypYbYRu0WguHQaoHuCyXMtWoaNg3KekDySKNGBesYbP/exec"; 
 
     let currentUser = "";
     let localStampCount = 0;
@@ -391,14 +393,16 @@
             fetch(SCRIPT_URL + "?t=" + new Date().getTime())
             .then(res => res.json())
             .then(data => {
-                adminList = data.admins || []; // VIP名單
-
-                // 1. 處理心聲牆權限與顯示
+                // 1. 處理權限與心聲牆
                 const listDiv = document.getElementById('recordList');
-                
-                // 檢查權限
-                if (adminList.includes(currentUser)) {
-                    // 有權限 -> 正常顯示資料
+                // 確保 adminList 是陣列
+                adminList = (data.admins || []).map(name => String(name).trim());
+                // 確保 currentUser 也是乾淨的字串
+                const myName = String(currentUser).trim();
+
+                // 權限檢查邏輯
+                if (adminList.includes(myName)) {
+                    // 有權限：正常顯示
                     const records = data.records;
                     listDiv.innerHTML = '';
                     if(records.length === 0) listDiv.innerHTML = '<div style="text-align:center; color:#ccc;">無資料</div>';
@@ -411,28 +415,20 @@
                         div.innerHTML = `<div style="display:flex; justify-content:space-between; color:#95a5a6; font-size:0.85rem;"><b>${item.nickname}</b> <span>${dateStr}</span></div><div style="color:#34495e; margin-top:5px;">${item.reason}</div>`;
                         listDiv.appendChild(div);
                     });
-
-                    // 也要為了「集點卡」更新我的資料
-                    // (但其實下面還會跑一次，這裡主要是為了顯示列表)
                 } else {
-                    // 無權限 -> 顯示禁止畫面
+                    // 無權限：顯示鎖頭畫面
                     listDiv.innerHTML = `
                         <div class="access-denied">
                             <span class="icon">🔒</span>
-                            <h3>權限不足</h3>
-                            <p>此區域僅開放給特定人員查看。<br>請專注於您自己的修行。</p>
+                            <h3>VIP 限定區域</h3>
+                            <p>此區域僅開放給核心成員查看。<br>請專注於您的離職修行。</p>
                         </div>
                     `;
                 }
 
-                // 2. 更新集點卡 (這個每個人都要跑)
-                const records = data.records; // 即使沒權限看列表，後端還是有回傳 records 供計算點數 (暫時方案)
-                // 為了資安，如果要嚴格做，後端應該根據權限回傳不同結構
-                // 但為了維持集點功能正常運作，我們這裡還是會收到 records
-                // 前端只負責「不渲染列表」
-                
-                const myNameClean = String(currentUser).trim();
-                myRecordsData = records.filter(d => String(d.nickname).trim() === myNameClean);
+                // 2. 更新集點卡
+                const records = data.records; // 即使無權限，還是需要資料來算點數
+                myRecordsData = records.filter(d => String(d.nickname).trim() === myName);
                 const serverCount = myRecordsData.length;
                 if (serverCount > 0 || localStampCount === 0) localStampCount = serverCount;
                 updateGrid(localStampCount);
@@ -454,7 +450,12 @@
 
                 resolve();
             })
-            .catch(e => { console.error(e); resolve(); });
+            .catch(e => { 
+                console.error(e);
+                // 錯誤處理：如果讀不到資料，心聲牆顯示錯誤
+                document.getElementById('recordList').innerHTML = '<div style="text-align:center; color:#e74c3c;">連線錯誤：無法取得資料</div>';
+                resolve(); 
+            });
         });
     }
 
