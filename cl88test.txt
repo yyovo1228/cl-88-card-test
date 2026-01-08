@@ -315,7 +315,7 @@
     // ==========================================
     // ⚠️ 請換上你的「測試站」網址
     // ==========================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/你的測試站網址/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwaqB2Fx3mLcHYzEE-FyHY7TqG2zRKHy2FGf-zkyWMUEDRlgxWTFE59B_OUtKOcW_7W/exec"; 
 
     let currentUser = "";
     let localStampCount = 0;
