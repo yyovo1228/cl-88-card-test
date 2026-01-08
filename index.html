@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CL88Card-測試</title>
+    <title>CL 離職集點趣 - 測試</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -53,7 +53,6 @@
 
         h1 { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--primary-red); font-size: 1.5rem; letter-spacing: 1px;}
 
-        /* 導航列 */
         .tabs { display: flex; padding: 10px; gap: 8px; justify-content: center; background: #fff;}
         .tab { 
             flex: 1; padding: 8px; text-align: center; border-radius: 50px; 
@@ -86,7 +85,6 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 集點卡 */
         .loyalty-card {
             width: 100%; background: white; border-radius: 20px; padding: 25px 15px;
             border: 2px dashed #f1948a; box-shadow: 0 10px 25px rgba(0,0,0,0.08);
@@ -119,7 +117,6 @@
         }
         .stamp-slot.stamped:hover { transform: scale(1.1); background: #fadbd8; }
 
-        /* 列表 & 留言 */
         .record-item, .feedback-item { 
             background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; 
             border-left: 5px solid var(--primary-red); box-shadow: 0 5px 15px rgba(0,0,0,0.03); 
@@ -127,18 +124,13 @@
         .feedback-item { border: 1px solid #eee; }
         .dev-reply { margin-top: 10px; padding: 10px; background: #f0f3f4; border-radius: 10px; font-size: 0.9rem; color: #2c3e50; border-left: 3px solid #3498db; }
 
-        /* 無權限畫面 */
         .access-denied {
-            text-align: center;
-            padding: 60px 20px;
-            color: #95a5a6;
-            animation: fadeIn 0.5s;
+            text-align: center; padding: 60px 20px; color: #95a5a6; animation: fadeIn 0.5s;
         }
         .access-denied .icon { font-size: 5rem; margin-bottom: 20px; display:block; animation: shake 0.5s; }
         .access-denied h3 { color: #7f8c8d; margin: 0 0 10px 0; font-size: 1.5rem; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
 
-        /* 彈窗 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); z-index: 9999; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 30px; width: 85%; max-width: 340px; border-radius: 20px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); position: relative; }
 
@@ -149,6 +141,10 @@
         .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4); }
         .btn:disabled { background: #ccc; cursor: wait; transform: none; box-shadow: none; }
         .btn-outline { background: transparent; border: 2px solid #bdc3c7; color: #7f8c8d; margin-top: 10px; box-shadow: none; }
+        
+        /* 編輯模式的按鈕群組 */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-group .btn { flex: 1; }
 
         #loginScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; box-sizing: border-box; background-image: radial-gradient(#d5d8dc 1.5px, transparent 1.5px); background-size: 20px 20px; }
         input[type="text"] { width: 100%; padding: 15px; margin: 25px 0; border: 2px solid #ecf0f1; border-radius: 12px; font-size: 1.1rem; text-align: center; font-family: inherit; }
@@ -156,14 +152,7 @@
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* ----- 老闆迴避模式 (偽裝 Excel) ----- */
-        #bossModeOverlay {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 99999;
-            font-family: Arial, sans-serif; font-size: 12px; color: #333;
-            cursor: pointer;
-        }
+        #bossModeOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; font-family: Arial, sans-serif; font-size: 12px; color: #333; cursor: pointer; }
         .fake-excel-header { background: #217346; color: white; padding: 10px; font-weight: bold; display: flex; align-items: center; }
         .fake-excel-menu { background: #f3f2f1; padding: 5px; border-bottom: 1px solid #e1dfdd; }
         .fake-grid { display: grid; grid-template-columns: 40px repeat(10, 1fr); border-collapse: collapse; }
@@ -176,8 +165,7 @@
 <div id="bossModeOverlay" onclick="exitBossMode()">
     <div class="fake-excel-header">📊 Annual Report - 2026.xlsx</div>
     <div class="fake-excel-menu">File | Home | Insert | Layout | Formulas | Data | Review | View</div>
-    <div class="fake-grid" id="fakeGrid">
-        </div>
+    <div class="fake-grid" id="fakeGrid"></div>
 </div>
 
 <div class="app-container">
@@ -252,9 +240,24 @@
 <div class="modal" id="storyModal">
     <div class="modal-content">
         <div style="font-size: 1.4rem; margin-bottom: 10px; font-weight:bold; color:#333;">📖 當下的痛</div>
-        <div id="storyContent" style="text-align:left; background:#f9f9f9; padding:15px; border-radius:10px; color:#555; margin-bottom:15px;"></div>
-        <div id="storyDate" style="color:#999; font-size:0.8rem; text-align:right;"></div>
-        <button class="btn" onclick="closeModal('storyModal')">回憶完畢</button>
+        
+        <div id="storyViewMode">
+            <div id="storyContent" style="text-align:left; background:#f9f9f9; padding:15px; border-radius:10px; color:#555; margin-bottom:15px; word-break: break-all;"></div>
+            <div id="storyDate" style="color:#999; font-size:0.8rem; text-align:right; margin-bottom:15px;"></div>
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="enableEditMode()">🖊️ 編輯</button>
+                <button class="btn" onclick="closeModal('storyModal')">回憶完畢</button>
+            </div>
+        </div>
+
+        <div id="storyEditMode" style="display:none;">
+            <textarea id="editReasonText" style="height:120px;"></textarea>
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="cancelEditMode()">取消</button>
+                <button id="saveEditBtn" class="btn" onclick="saveEdit()">💾 儲存修改</button>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -271,10 +274,9 @@
     // ==========================================
     // ⚠️ 記得填入你的「測試站」網址
     // ==========================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6sg0RnM1rOzS1kQyAPas5iypYbYRu0WguHQaoHuCyXMtWoaNg3KekDySKNGBesYbP/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZPl5uCP9IAc8VFEGB5jpfzaX1g127FdXaiLZJw9kCkR8A8QdTS-Mtdc_MG9KDsn51/exec"; 
 
-    // --- 老闆迴避設定 ---
-    const IDLE_LIMIT = 30; // 修正：閒置 30 秒進入老闆迴避模式
+    const IDLE_LIMIT = 30; 
     let idleTime = 0;
 
     let currentUser = "";
@@ -282,6 +284,9 @@
     let userIP = "Unknown";
     let myRecordsData = []; 
     let adminList = [];
+    
+    // 暫存目前正在編輯的紀錄資料
+    let currentEditingRecord = null;
 
     const grid = document.getElementById('grid');
     const welcomeModal = document.getElementById('welcomeModal');
@@ -298,7 +303,6 @@
         "既然解決不了問題，那就解決提出問題的人"
     ];
 
-    // 初始化格子
     function initGrid() {
         grid.innerHTML = '';
         for(let i=0; i<50; i++) {
@@ -310,7 +314,6 @@
         }
         updateGrid(0);
         
-        // 產生偽裝 Excel 的格子
         const fakeGrid = document.getElementById('fakeGrid');
         let html = '<div class="fake-cell-header"></div>';
         for(let i=65; i<75; i++) html += `<div class="fake-cell-header">${String.fromCharCode(i)}</div>`;
@@ -331,14 +334,12 @@
         }
         fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>userIP=d.ip).catch(()=>{});
 
-        // 啟動老闆迴避計時器
         setInterval(timerIncrement, 1000);
         document.body.addEventListener('mousemove', resetIdleTime);
         document.body.addEventListener('keypress', resetIdleTime);
         document.body.addEventListener('click', resetIdleTime);
     }
 
-    // 老闆迴避邏輯
     function timerIncrement() {
         if (!currentUser) return;
         idleTime++;
@@ -346,9 +347,7 @@
             document.getElementById('bossModeOverlay').style.display = 'block';
         }
     }
-    function resetIdleTime() {
-        idleTime = 0;
-    }
+    function resetIdleTime() { idleTime = 0; }
     function exitBossMode() {
         document.getElementById('bossModeOverlay').style.display = 'none';
         idleTime = 0;
@@ -397,15 +396,63 @@
         setTimeout(() => document.getElementById('reasonText').focus(), 100);
     }
 
+    // --- 故事回顧與編輯功能 ---
     function openStory(index) {
         const sortedRecords = [...myRecordsData].reverse(); 
         if (sortedRecords[index]) {
-            const r = sortedRecords[index];
-            document.getElementById('storyContent').innerText = r.reason;
-            document.getElementById('storyDate').innerText = new Date(r.time).toLocaleString();
+            currentEditingRecord = sortedRecords[index]; // 存起來給編輯用
+            
+            // 填充內容
+            document.getElementById('storyContent').innerText = currentEditingRecord.reason;
+            document.getElementById('storyDate').innerText = new Date(currentEditingRecord.time).toLocaleString();
+            
+            // 確保顯示的是 View Mode
+            document.getElementById('storyViewMode').style.display = 'block';
+            document.getElementById('storyEditMode').style.display = 'none';
+            
             openModal('storyModal');
         }
     }
+
+    function enableEditMode() {
+        document.getElementById('storyViewMode').style.display = 'none';
+        document.getElementById('storyEditMode').style.display = 'block';
+        document.getElementById('editReasonText').value = currentEditingRecord.reason;
+        document.getElementById('editReasonText').focus();
+    }
+
+    function cancelEditMode() {
+        document.getElementById('storyViewMode').style.display = 'block';
+        document.getElementById('storyEditMode').style.display = 'none';
+    }
+
+    function saveEdit() {
+        const newReason = document.getElementById('editReasonText').value;
+        if(!newReason) return alert("內容不能為空");
+
+        const btn = document.getElementById('saveEditBtn');
+        btn.disabled = true; btn.innerText = "儲存中...";
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ 
+                action: 'update_record', 
+                nickname: currentUser, 
+                time: currentEditingRecord.time, // 識別關鍵
+                new_reason: newReason 
+            }),
+            mode: 'no-cors'
+        }).then(() => {
+            alert("修改成功！");
+            btn.disabled = false; btn.innerText = "💾 儲存修改";
+            closeModal('storyModal');
+            fetchData(); // 重新抓資料
+        }).catch(err => {
+            alert("網路錯誤");
+            btn.disabled = false;
+        });
+    }
+    // ---------------------------
 
     function submitReason() {
         const reason = document.getElementById('reasonText').value;
@@ -469,7 +516,6 @@
                         listDiv.appendChild(div);
                     });
                 } else {
-                    // 修正：極簡化權限不足文案
                     listDiv.innerHTML = `
                         <div class="access-denied">
                             <span class="icon">🔒</span>
@@ -537,4 +583,3 @@
 
 </body>
 </html>
-
