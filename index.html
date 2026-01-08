@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CL 離職集點趣</title>
+    <title>CL 離職集點趣 - 測試站</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -95,16 +95,16 @@
         .points-header { text-align: center; margin-bottom: 25px; border-bottom: 2px dashed #f2f3f4; padding-bottom: 15px;}
         .points-number { font-size: 3rem; font-family: 'Fredoka', sans-serif; color: var(--primary-red); font-weight: bold; text-shadow: 2px 2px 0px #fadbd8;}
 
-        .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
         .stamp-slot {
-            aspect-ratio: 1; border-radius: 12px; background: #fff; border: 2px solid #ecf0f1;
-            display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
+            aspect-ratio: 1; border-radius: 8px; background: #fff; border: 2px solid #ecf0f1;
+            display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
             color: #bdc3c7; position: relative; cursor: default; transition: 0.2s; font-family: 'Fredoka', sans-serif;
         }
 
         .stamp-slot.next-up {
             border-color: var(--primary-red); background: #fdfefe; cursor: pointer; color: var(--primary-red);
-            font-size: 1.5rem; font-weight: bold; box-shadow: 0 0 10px rgba(231, 76, 60, 0.2);
+            font-size: 1.2rem; font-weight: bold; box-shadow: 0 0 10px rgba(231, 76, 60, 0.2);
             animation: pulse 1.5s infinite;
         }
         .stamp-slot.next-up::after { content: "+"; }
@@ -113,8 +113,8 @@
             border: 2px solid var(--primary-red); background: #fdedec; color: transparent; cursor: pointer;
         }
         .stamp-slot.stamped::before {
-            content: "離"; font-size: 1.2rem; font-weight: bold; color: var(--primary-red); position: absolute;
-            border: 2px solid var(--primary-red); border-radius: 50%; width: 80%; height: 80%;
+            content: "離"; font-size: 1rem; font-weight: bold; color: var(--primary-red); position: absolute;
+            border: 2px solid var(--primary-red); border-radius: 50%; width: 85%; height: 85%;
             display: flex; align-items: center; justify-content: center; transform: rotate(-10deg);
         }
         .stamp-slot.stamped:hover { transform: scale(1.1); background: #fadbd8; }
@@ -155,9 +155,30 @@
         
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* ----- 老闆迴避模式 (偽裝 Excel) ----- */
+        #bossModeOverlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 99999;
+            font-family: Arial, sans-serif; font-size: 12px; color: #333;
+            cursor: pointer;
+        }
+        .fake-excel-header { background: #217346; color: white; padding: 10px; font-weight: bold; display: flex; align-items: center; }
+        .fake-excel-menu { background: #f3f2f1; padding: 5px; border-bottom: 1px solid #e1dfdd; }
+        .fake-grid { display: grid; grid-template-columns: 40px repeat(10, 1fr); border-collapse: collapse; }
+        .fake-cell { border: 1px solid #e1dfdd; padding: 5px; height: 20px; overflow: hidden; white-space: nowrap; }
+        .fake-cell-header { background: #f3f2f1; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
+
+<div id="bossModeOverlay" onclick="exitBossMode()">
+    <div class="fake-excel-header">📊 Annual Report - 2026.xlsx</div>
+    <div class="fake-excel-menu">File | Home | Insert | Layout | Formulas | Data | Review | View</div>
+    <div class="fake-grid" id="fakeGrid">
+        </div>
+</div>
 
 <div class="app-container">
     <div id="loginScreen">
@@ -188,7 +209,7 @@
             <div class="loyalty-card">
                 <div class="points-header">
                     <span class="points-number" id="stampCount">0</span>
-                    <span style="color:#bdc3c7; font-size:1.5rem; font-family:'Fredoka'"> / 30</span>
+                    <span style="color:#bdc3c7; font-size:1.5rem; font-family:'Fredoka'"> / 50</span>
                 </div>
                 <div class="stamp-grid" id="grid"></div>
             </div>
@@ -230,7 +251,7 @@
 
 <div class="modal" id="storyModal">
     <div class="modal-content">
-        <div style="font-size: 2rem; margin-bottom: 10px;">📖 當下的痛</div>
+        <div style="font-size: 1.4rem; margin-bottom: 10px; font-weight:bold; color:var(--primary-red);">📖 當下的痛</div>
         <div id="storyContent" style="text-align:left; background:#f9f9f9; padding:15px; border-radius:10px; color:#555; margin-bottom:15px;"></div>
         <div id="storyDate" style="color:#999; font-size:0.8rem; text-align:right;"></div>
         <button class="btn" onclick="closeModal('storyModal')">回憶完畢</button>
@@ -241,7 +262,7 @@
     <div class="modal-content" style="border: 4px solid gold;">
         <div style="font-size: 4rem; margin-bottom: 10px;">🎉</div>
         <h2>恭喜你，自由了！</h2>
-        <p style="color:#555; margin: 20px 0;">你已經集滿了 30 個離職的理由。<br><b>去吧！遞出那張單子！</b></p>
+        <p style="color:#555; margin: 20px 0;">你已經集滿了 50 個離職的理由。<br><b>去吧！遞出那張單子！</b></p>
         <button class="btn" style="background:gold; color:#d35400;" onclick="closeModal('celebrationModal')">我要去追尋自由！</button>
     </div>
 </div>
@@ -251,6 +272,10 @@
     // ⚠️ 記得填入你的「測試站」網址
     // ==========================================
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6sg0RnM1rOzS1kQyAPas5iypYbYRu0WguHQaoHuCyXMtWoaNg3KekDySKNGBesYbP/exec"; 
+
+    // --- 老闆迴避設定 ---
+    const IDLE_LIMIT = 30; // 閒置幾秒進入老闆模式 (可自行修改)
+    let idleTime = 0;
 
     let currentUser = "";
     let localStampCount = 0;
@@ -273,9 +298,10 @@
         "既然解決不了問題，那就解決提出問題的人"
     ];
 
+    // 初始化格子
     function initGrid() {
         grid.innerHTML = '';
-        for(let i=0; i<30; i++) {
+        for(let i=0; i<50; i++) {
             let slot = document.createElement('div');
             slot.className = 'stamp-slot';
             slot.innerHTML = `<span>${i+1}</span>`; 
@@ -283,6 +309,16 @@
             grid.appendChild(slot);
         }
         updateGrid(0);
+        
+        // 產生偽裝 Excel 的格子
+        const fakeGrid = document.getElementById('fakeGrid');
+        let html = '<div class="fake-cell-header"></div>';
+        for(let i=65; i<75; i++) html += `<div class="fake-cell-header">${String.fromCharCode(i)}</div>`;
+        for(let r=1; r<30; r++) {
+            html += `<div class="fake-cell-header">${r}</div>`;
+            for(let c=0; c<10; c++) html += `<div class="fake-cell" style="color:${Math.random()>0.7?'red':'black'}">${Math.floor(Math.random()*10000)}</div>`;
+        }
+        fakeGrid.innerHTML = html;
     }
 
     function init() {
@@ -294,6 +330,30 @@
             showWelcomeFlow();
         }
         fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>userIP=d.ip).catch(()=>{});
+
+        // 啟動老闆迴避計時器
+        setInterval(timerIncrement, 1000);
+        document.body.addEventListener('mousemove', resetIdleTime);
+        document.body.addEventListener('keypress', resetIdleTime);
+        document.body.addEventListener('click', resetIdleTime);
+    }
+
+    // 老闆迴避邏輯
+    function timerIncrement() {
+        // 只有在登入後才啟用
+        if (!currentUser) return;
+        
+        idleTime++;
+        if (idleTime > IDLE_LIMIT) {
+            document.getElementById('bossModeOverlay').style.display = 'block';
+        }
+    }
+    function resetIdleTime() {
+        idleTime = 0;
+    }
+    function exitBossMode() {
+        document.getElementById('bossModeOverlay').style.display = 'none';
+        idleTime = 0;
     }
 
     function handleLoginClick() {
@@ -359,7 +419,7 @@
         localStampCount++;
         updateGrid(localStampCount);
 
-        if (localStampCount >= 30) triggerCelebration();
+        if (localStampCount >= 50) triggerCelebration();
 
         fetch(SCRIPT_URL, {
             method: 'POST',
@@ -393,16 +453,11 @@
             fetch(SCRIPT_URL + "?t=" + new Date().getTime())
             .then(res => res.json())
             .then(data => {
-                // 1. 處理權限與心聲牆
-                const listDiv = document.getElementById('recordList');
-                // 確保 adminList 是陣列
                 adminList = (data.admins || []).map(name => String(name).trim());
-                // 確保 currentUser 也是乾淨的字串
                 const myName = String(currentUser).trim();
+                const listDiv = document.getElementById('recordList');
 
-                // 權限檢查邏輯
                 if (adminList.includes(myName)) {
-                    // 有權限：正常顯示
                     const records = data.records;
                     listDiv.innerHTML = '';
                     if(records.length === 0) listDiv.innerHTML = '<div style="text-align:center; color:#ccc;">無資料</div>';
@@ -416,7 +471,6 @@
                         listDiv.appendChild(div);
                     });
                 } else {
-                    // 無權限：顯示鎖頭畫面
                     listDiv.innerHTML = `
                         <div class="access-denied">
                             <span class="icon">🔒</span>
@@ -426,14 +480,12 @@
                     `;
                 }
 
-                // 2. 更新集點卡
-                const records = data.records; // 即使無權限，還是需要資料來算點數
+                const records = data.records;
                 myRecordsData = records.filter(d => String(d.nickname).trim() === myName);
                 const serverCount = myRecordsData.length;
                 if (serverCount > 0 || localStampCount === 0) localStampCount = serverCount;
                 updateGrid(localStampCount);
 
-                // 3. 處理留言板
                 const feedbacks = data.feedbacks;
                 const fbDiv = document.getElementById('feedbackList');
                 fbDiv.innerHTML = '';
@@ -450,12 +502,7 @@
 
                 resolve();
             })
-            .catch(e => { 
-                console.error(e);
-                // 錯誤處理：如果讀不到資料，心聲牆顯示錯誤
-                document.getElementById('recordList').innerHTML = '<div style="text-align:center; color:#e74c3c;">連線錯誤：無法取得資料</div>';
-                resolve(); 
-            });
+            .catch(e => { console.error(e); resolve(); });
         });
     }
 
