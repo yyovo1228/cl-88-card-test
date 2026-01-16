@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CL 88 card - 測試</title>
+    <title>CL 離職集點趣</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* --- 全域變數設定 --- */
+        /* --- 全域變數 --- */
         :root {
             --primary-red: #e74c3c;
             --primary-bg: #fadbd8;
@@ -54,7 +54,6 @@
 
         h1 { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--primary-red); font-size: 1.5rem; letter-spacing: 1px;}
 
-        /* --- 導航列 --- */
         .tabs { display: flex; padding: 10px; gap: 8px; justify-content: center; background: #fff;}
         .tab { 
             flex: 1; padding: 8px; text-align: center; border-radius: 50px; 
@@ -64,24 +63,11 @@
         .tab.active { background: var(--primary-red); color: white; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.4); transform: translateY(-2px); }
         
         .user-info { 
-            padding: 10px 25px; 
-            text-align: right; 
-            font-size: 0.9rem; 
-            color: #7f8c8d; 
-            background: #fff;
-            display: flex; 
-            justify-content: flex-end; 
-            align-items: center; 
-            gap: 10px;
-            font-family: 'Fredoka', sans-serif;
+            padding: 10px 25px; text-align: right; font-size: 0.9rem; color: #7f8c8d; background: #fff;
+            display: flex; justify-content: flex-end; align-items: center; gap: 10px; font-family: 'Fredoka', sans-serif;
         }
         
-        .main-content { 
-            padding: 20px; 
-            flex: 1; 
-            overflow-y: auto;
-            position: relative;
-        }
+        .main-content { padding: 20px; flex: 1; overflow-y: auto; position: relative; }
 
         .view-section { display: none; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
@@ -129,7 +115,6 @@
         .feedback-item { border: 1px solid #eee; }
         .dev-reply { margin-top: 10px; padding: 10px; background: #f0f3f4; border-radius: 10px; font-size: 0.9rem; color: #2c3e50; border-left: 3px solid #3498db; }
 
-        /* --- 無權限畫面 --- */
         .access-denied {
             text-align: center; padding: 60px 20px; color: #95a5a6; animation: fadeIn 0.5s;
         }
@@ -152,14 +137,25 @@
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
         .btn-group .btn { flex: 1; }
 
-        /* --- 登入畫面 --- */
+        /* 數量控制器 */
+        .qty-control {
+            display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px;
+            background: #fdfefe; padding: 10px; border-radius: 10px; border: 1px solid #ecf0f1;
+        }
+        .qty-btn {
+            width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--primary-red);
+            background: white; color: var(--primary-red); font-weight: bold; font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .qty-btn:hover { background: var(--primary-red); color: white; }
+        .qty-display { font-size: 1.5rem; font-weight: bold; color: #2c3e50; min-width: 30px; }
+
         #loginScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; box-sizing: border-box; background-image: radial-gradient(#d5d8dc 1.5px, transparent 1.5px); background-size: 20px 20px; }
         input[type="text"] { width: 100%; padding: 15px; margin: 25px 0; border: 2px solid #ecf0f1; border-radius: 12px; font-size: 1.1rem; text-align: center; font-family: inherit; }
         
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* --- 老闆迴避模式 (偽裝 Excel) --- */
         #bossModeOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; font-family: Arial, sans-serif; font-size: 12px; color: #333; cursor: pointer; }
         .fake-excel-header { background: #217346; color: white; padding: 10px; font-weight: bold; display: flex; align-items: center; }
         .fake-excel-menu { background: #f3f2f1; padding: 5px; border-bottom: 1px solid #e1dfdd; }
@@ -238,8 +234,18 @@
 
 <div class="modal" id="reasonModal">
     <div class="modal-content">
-        <h3 style="margin:0; color:var(--primary-red)">😤 記錄原因</h3>
+        <h3 style="margin:0 0 15px 0; color:var(--primary-red)">😤 記錄原因</h3>
         <textarea id="reasonText" placeholder="這次又是因為什麼？"></textarea>
+        
+        <div class="qty-control">
+            <span style="color:#7f8c8d; font-size:0.9rem;">怒氣指數 (蓋章數)</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <button class="qty-btn" onclick="adjustQty(-1)">-</button>
+                <span class="qty-display" id="qtyDisplay">1</span>
+                <button class="qty-btn" onclick="adjustQty(1)">+</button>
+            </div>
+        </div>
+
         <button id="confirmBtn" class="btn" onclick="submitReason()">確認蓋章</button>
         <button class="btn btn-outline" onclick="closeModal('reasonModal')">算了，再忍忍</button>
     </div>
@@ -248,7 +254,6 @@
 <div class="modal" id="storyModal">
     <div class="modal-content">
         <div style="font-size: 1.4rem; margin-bottom: 10px; font-weight:bold; color:#333;">📖 當下的痛</div>
-        
         <div id="storyViewMode">
             <div id="storyContent" style="text-align:left; background:#f9f9f9; padding:15px; border-radius:10px; color:#555; margin-bottom:15px; word-break: break-all;"></div>
             <div id="storyDate" style="color:#999; font-size:0.8rem; text-align:right; margin-bottom:15px;"></div>
@@ -257,7 +262,6 @@
                 <button class="btn" onclick="closeModal('storyModal')">回憶完畢</button>
             </div>
         </div>
-
         <div id="storyEditMode" style="display:none;">
             <textarea id="editReasonText" style="height:120px;"></textarea>
             <div class="btn-group">
@@ -279,28 +283,28 @@
 
 <script>
     // ==========================================
-    // ⚠️ 已經幫你填回正確的測試站網址
+    // ⚠️ 這是您提供的最新正式站網址
     // ==========================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZPl5uCP9IAc8VFEGB5jpfzaX1g127FdXaiLZJw9kCkR8A8QdTS-Mtdc_MG9KDsn51/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_9UP1nU73dd1MI7LDSRxMoyOgI4I16SKoLTanaEUXGlaD7FrqrP-uwinTJ_8zZ3QU/exec"; 
 
-    // --- 時間設定區 ---
-    const IDLE_LIMIT = 60; // 60秒後進入老闆迴避模式
-    const LOGOUT_LIMIT = 3600; // 3600秒 (60分鐘) 後自動登出
-    let idleTime = 0;
+    // --- 時間設定 ---
+    const IDLE_LIMIT = 60; // 60秒 -> 老闆迴避
+    const LOGOUT_LIMIT = 3600; // 60分鐘 -> 自動登出
+    let lastActiveTime = Date.now(); 
 
     let currentUser = "";
     let localStampCount = 0;
+    let currentStampQty = 1; 
     let userIP = "Unknown";
     let myRecordsData = []; 
     let adminList = [];
-    let currentEditingRecord = null; // 暫存編輯用
+    let currentEditingRecord = null; 
 
     const grid = document.getElementById('grid');
     const welcomeModal = document.getElementById('welcomeModal');
     const welcomeBtn = document.getElementById('welcomeBtn');
     const quoteText = document.getElementById('quoteText');
 
-    // --- 金句庫 ---
     const snarkyQuotes = [
         "不要隨便展現你的修養，<br>對方可能配不上。",
         "吾日三省吾身：<br>吾沒錯，是他們有病，<br>這工作沒法做。",
@@ -311,26 +315,54 @@
         "既然解決不了問題，<br>那就解決提出問題的人。"
     ];
 
-    // --- 程式初始化 ---
     function init() {
         initGrid();
-        // 檢查自動登入
         const savedName = localStorage.getItem('cl_nickname');
         if(savedName) {
             currentUser = savedName;
             document.getElementById('nicknameInput').value = savedName;
             showWelcomeFlow();
         }
-        // 抓IP (選用)
         fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>userIP=d.ip).catch(()=>{});
 
-        // 啟動閒置偵測 (每秒執行一次 timerIncrement)
-        setInterval(timerIncrement, 1000);
-        // 只要有這些動作，就重置計時器
-        ['mousemove', 'keypress', 'click'].forEach(evt => document.body.addEventListener(evt, resetIdleTime));
+        setInterval(checkIdleStatus, 1000);
+        ['mousemove', 'keypress', 'click'].forEach(evt => document.body.addEventListener(evt, resetActiveTimer));
     }
 
-    // --- 產生 50 個格子 ---
+    function checkIdleStatus() {
+        if (!currentUser) return; 
+        const now = Date.now();
+        const idleSeconds = Math.floor((now - lastActiveTime) / 1000);
+
+        if (idleSeconds > IDLE_LIMIT) {
+            const overlay = document.getElementById('bossModeOverlay');
+            if(overlay.style.display !== 'block') overlay.style.display = 'block';
+        }
+        if (idleSeconds > LOGOUT_LIMIT) {
+            alert("因閒置過久(60分鐘)，系統已自動登出");
+            logout();
+        }
+    }
+
+    function resetActiveTimer() {
+        const overlay = document.getElementById('bossModeOverlay');
+        if (overlay.style.display === 'block') return;
+        lastActiveTime = Date.now();
+    }
+
+    function exitBossMode() {
+        document.getElementById('bossModeOverlay').style.display = 'none';
+        lastActiveTime = Date.now();
+    }
+
+    function adjustQty(delta) {
+        let newQty = currentStampQty + delta;
+        if(newQty < 1) newQty = 1;
+        if(newQty > 10) newQty = 10; 
+        currentStampQty = newQty;
+        document.getElementById('qtyDisplay').innerText = currentStampQty;
+    }
+
     function initGrid() {
         grid.innerHTML = '';
         for(let i=0; i<50; i++) {
@@ -342,7 +374,6 @@
         }
         updateGrid(0);
         
-        // 產生偽裝 Excel 的格子 (裝飾用)
         const fakeGrid = document.getElementById('fakeGrid');
         let html = '<div class="fake-cell-header"></div>';
         for(let i=65; i<75; i++) html += `<div class="fake-cell-header">${String.fromCharCode(i)}</div>`;
@@ -353,36 +384,12 @@
         fakeGrid.innerHTML = html;
     }
 
-    // --- 計時器邏輯 (核心功能) ---
-    function timerIncrement() {
-        if (!currentUser) return; // 沒登入不計時
-        idleTime++;
-        
-        // 1. 觸發老闆迴避 (60秒)
-        if (idleTime > IDLE_LIMIT) {
-            document.getElementById('bossModeOverlay').style.display = 'block';
-        }
-
-        // 2. 觸發自動登出 (60分鐘)
-        if (idleTime > LOGOUT_LIMIT) {
-            alert("因閒置過久(60分鐘)，系統已自動登出");
-            logout();
-        }
-    }
-    
-    function resetIdleTime() { idleTime = 0; }
-    
-    function exitBossMode() {
-        document.getElementById('bossModeOverlay').style.display = 'none';
-        idleTime = 0;
-    }
-
-    // --- 登入與歡迎流程 ---
     function handleLoginClick() {
         const input = document.getElementById('nicknameInput').value.trim();
         if(!input) return alert("請輸入暱稱");
         currentUser = input;
         localStorage.setItem('cl_nickname', currentUser);
+        lastActiveTime = Date.now();
         showWelcomeFlow();
     }
 
@@ -390,12 +397,9 @@
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('displayNickname').innerText = currentUser;
         
-        // 隨機選金句 (防止連續重複)
         const lastQuote = localStorage.getItem('lastQuote');
         let newQuote = snarkyQuotes[Math.floor(Math.random() * snarkyQuotes.length)];
-        if (newQuote === lastQuote) {
-            newQuote = snarkyQuotes[Math.floor(Math.random() * snarkyQuotes.length)];
-        }
+        if (newQuote === lastQuote) newQuote = snarkyQuotes[Math.floor(Math.random() * snarkyQuotes.length)];
         localStorage.setItem('lastQuote', newQuote);
         quoteText.innerHTML = newQuote;
 
@@ -422,29 +426,24 @@
         if(view !== 'card') fetchData(); 
     }
 
-    // --- Modal 控制 ---
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     
     function openReasonModal() {
+        currentStampQty = 1;
+        document.getElementById('qtyDisplay').innerText = 1;
         openModal('reasonModal');
         setTimeout(() => document.getElementById('reasonText').focus(), 100);
     }
 
-    // --- 故事回顧與編輯功能 ---
     function openStory(index) {
         const sortedRecords = [...myRecordsData].reverse(); 
         if (sortedRecords[index]) {
-            currentEditingRecord = sortedRecords[index]; // 暫存該筆資料
-            
-            // 填充內容
+            currentEditingRecord = sortedRecords[index];
             document.getElementById('storyContent').innerText = currentEditingRecord.reason;
             document.getElementById('storyDate').innerText = new Date(currentEditingRecord.time).toLocaleString();
-            
-            // 確保顯示的是檢視模式
             document.getElementById('storyViewMode').style.display = 'block';
             document.getElementById('storyEditMode').style.display = 'none';
-            
             openModal('storyModal');
         }
     }
@@ -464,31 +463,21 @@
     function saveEdit() {
         const newReason = document.getElementById('editReasonText').value;
         if(!newReason) return alert("內容不能為空");
-
         const btn = document.getElementById('saveEditBtn');
         btn.disabled = true; btn.innerText = "儲存中...";
 
         fetch(SCRIPT_URL, {
             method: 'POST',
-            body: JSON.stringify({ 
-                action: 'update_record', 
-                nickname: currentUser, 
-                time: currentEditingRecord.time, 
-                new_reason: newReason 
-            }),
+            body: JSON.stringify({ action: 'update_record', nickname: currentUser, time: currentEditingRecord.time, new_reason: newReason }),
             mode: 'no-cors'
         }).then(() => {
             alert("修改成功！");
             btn.disabled = false; btn.innerText = "💾 儲存修改";
             closeModal('storyModal');
-            fetchData(); // 重新抓資料更新畫面
-        }).catch(err => {
-            alert("網路錯誤");
-            btn.disabled = false;
-        });
+            fetchData(); 
+        }).catch(err => { alert("網路錯誤"); btn.disabled = false; });
     }
 
-    // --- 送出資料功能 ---
     function submitReason() {
         const reason = document.getElementById('reasonText').value;
         if(!reason) return alert("請寫下原因");
@@ -496,14 +485,20 @@
         const btn = document.getElementById('confirmBtn');
         btn.disabled = true; btn.innerText = "傳送中...";
         
-        localStampCount++;
+        localStampCount += currentStampQty;
         updateGrid(localStampCount);
 
         if (localStampCount >= 50) triggerCelebration();
 
         fetch(SCRIPT_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: 'add_record', nickname: currentUser, reason: reason, ip: userIP }),
+            body: JSON.stringify({ 
+                action: 'add_record', 
+                nickname: currentUser, 
+                reason: reason, 
+                ip: userIP,
+                count: currentStampQty 
+            }),
             mode: 'no-cors'
         }).then(() => {
             closeModal('reasonModal');
@@ -516,7 +511,6 @@
     function submitFeedback() {
         const text = document.getElementById('feedbackText').value;
         if(!text) return alert("請輸入內容");
-        
         fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify({ action: 'add_feedback', nickname: currentUser, message: text }),
@@ -528,7 +522,6 @@
         });
     }
 
-    // --- 核心：抓取資料 ---
     function fetchData() {
         return new Promise((resolve) => {
             fetch(SCRIPT_URL + "?t=" + new Date().getTime())
@@ -538,7 +531,6 @@
                 const myName = String(currentUser).trim();
                 const listDiv = document.getElementById('recordList');
 
-                // 判斷是否為 VIP
                 if (adminList.includes(myName)) {
                     const records = data.records;
                     listDiv.innerHTML = '';
@@ -553,23 +545,15 @@
                         listDiv.appendChild(div);
                     });
                 } else {
-                    listDiv.innerHTML = `
-                        <div class="access-denied">
-                            <span class="icon">🔒</span>
-                            <h3>限定區域</h3>
-                            <p>請專注於您的離職修行</p>
-                        </div>
-                    `;
+                    listDiv.innerHTML = `<div class="access-denied"><span class="icon">🔒</span><h3>限定區域</h3><p>請專注於您的離職修行</p></div>`;
                 }
 
-                // 處理個人集點資料
                 const records = data.records;
                 myRecordsData = records.filter(d => String(d.nickname).trim() === myName);
                 const serverCount = myRecordsData.length;
                 if (serverCount > 0 || localStampCount === 0) localStampCount = serverCount;
                 updateGrid(localStampCount);
 
-                // 處理留言板
                 const feedbacks = data.feedbacks;
                 const fbDiv = document.getElementById('feedbackList');
                 fbDiv.innerHTML = '';
@@ -583,19 +567,12 @@
                     div.innerHTML = `<div><b>${fb.nickname}</b> <span style="color:#ccc; font-size:0.8rem;">${d.getMonth()+1}/${d.getDate()}</span></div><div style="margin:5px 0;">${fb.message}</div>${replyHtml}`;
                     fbDiv.appendChild(div);
                 });
-
                 resolve();
             })
-            .catch(e => { 
-                console.error(e);
-                // 錯誤處理：如果讀取失敗，顯示錯誤訊息
-                document.getElementById('recordList').innerHTML = '<div style="text-align:center; color:#e74c3c;">讀取失敗，請檢查網路或網址設定</div>';
-                resolve(); 
-            });
+            .catch(e => { console.error(e); resolve(); });
         });
     }
 
-    // --- 更新格子狀態 ---
     function updateGrid(count) {
         document.getElementById('stampCount').innerText = count;
         const slots = document.querySelectorAll('.stamp-slot');
@@ -611,7 +588,6 @@
         });
     }
 
-    // --- 慶祝特效 (Confetti) ---
     function triggerCelebration() {
         openModal('celebrationModal');
         const duration = 3000;
@@ -623,10 +599,7 @@
         }());
     }
 
-    // --- 啟動程式 ---
     init();
-    
-    // 點擊背景關閉 Modal
     window.onclick = function(e) { if(e.target.classList.contains('modal')) e.target.style.display='none'; }
 </script>
 
